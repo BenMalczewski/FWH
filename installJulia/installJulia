@@ -1,0 +1,26 @@
+
+# move to home directory
+startDir=$(pwd)
+cd $HOME
+
+# get and untar julia 
+wget https://julialang-s3.julialang.org/bin/linux/x64/1.10/julia-1.10.2-linux-x86_64.tar.gz
+tar zxvf julia-1.10.2-linux-x86_64.tar.gz
+
+# add to bashrc and source
+juliaDir="julia-1.10.2"
+homeDir=$(pwd)
+echo "export PATH=\"\$PATH:$homeDir/$juliaDir/bin\"" >> ~/.bashrc
+source ~/.bashrc
+
+# install required julia packages
+julia ${startDir}/pkgs2install.jl
+julia ${startDir}/mpiexecjlInstall.jl
+
+# add mpiexecjl path to bashrc, and source
+echo "export PATH=\"\$PATH:$homeDir/.julia/bin\"" >> ~/.bashrc
+source ~/.bashrc
+
+# test that everything exists
+which julia
+which mpiexecjl
