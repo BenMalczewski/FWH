@@ -1,0 +1,68 @@
+Changelog for FWH solver:
+
+monopole validation v2:
+-updated methodology for computing dA's, checksum added to make sure all dA's add to the total surface area
+-added debug option in fhw.dat to write dA's as p3d file, dA is written twice since my p3d solution writer needs multiple variables to write
+-made a slight adjustment in sources.jl, after computing F1 and F2, F1' and F2' are computed, then windowed and FFT'd
+	-this was in the Mendez et al. 2013 paper
+	-this removes the overshoot in the spectra at low frequencies
+	
+monopole validation v3:
+-changed FWH formulation to Lyrintzis's formulation
+
+Version 0.1.0
+-added debug feature that writes vector from surface to observer
+
+Version 0.2.0
+-modified fwh.dat file so that grid and solution files do not require same root
+-implmented overlapping to FFT, users can now specify a % overlap and number of segments
+	-code gives consistent results with different number of segments/overlap, but mirrors directivity
+	-added folder showing debug of signalTools.jl toolbox
+	
+Version 0.2.1
+-modified sources.jl and signal tools so that only the magnitude from fft was used
+	-differences between positive and negative were not present and directivity was wrong
+	-peak magnitude is correct
+	
+Version 0.2.2
+-modified overlappedFFT to output the correct signs for the real and imaginary components
+-added option of no window for FFT
+-added multipliers to window functions so that the magnitudes come out correctly
+-added ijk limits if you dont want to use the entirety of a surface
+-flipped direction of vector between source and observer
+-created postProcess.jl
+	-for now, all it has is a function to sum the surfaces and write the absolute value
+	-users need to install "DelimitedFiles" now
+	
+Version 0.3.0
+-changed FWH formulation back to that of Mendez et al. (2013)
+	-ran on jet data and gives good agreeance with literature
+	-still no disk averaging
+	
+Version 0.4.0
+-moved the script for writing patch solutions to postProcess.jl
+-implemented disk averaging
+	-users now specify PSI coefficients as described in Mendez et al. (2013)
+	
+Version 0.4.1
+-implemented some additional deallocation lines in the main script
+
+Version 0.5.0
+-placed main script into a stand-alone function to hopefully save RAM
+
+Version 0.5.1
+-added the use of Memoization package to give better control of function caches
+-users now need to add the "Memoization" package
+
+Version 0.5.2
+-added more use of the Memoization package and some more RAM saving functionality
+
+Version 0.6.0
+-looping through patches is now handled via bash scripting
+	-new instance of the code is run with each patch
+	-RAM can properly clear after each patch solution
+-code now computes grid cutoff frequency based on maximum grid spacing and outputs result
+
+Version 1.0.0
+-official release version
+-cleaned up FWH.dat file

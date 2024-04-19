@@ -1,0 +1,16 @@
+## Batch Script to run FWH code
+
+## Set number of processors
+np="16"		
+echo "Number of Processors: $np"
+
+
+## Main loop
+for i in 1 2 3 4 5 6 7 8;
+do 
+	echo "Doing Patch: $i"
+	echo "currentPatch = $i" > whatPatch.dat
+
+	mpiexecjl -n $np julia main.jl
+done
+julia sumSurfaces.jl

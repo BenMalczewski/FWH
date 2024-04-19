@@ -1,0 +1,130 @@
+#=
+    _______       ____  __  |
+   / ____/ |     / / / / /  |
+  / /_   | | /| / / /_/ /   |   Ffowcs-Williams Hawking Solver
+ / __/   | |/ |/ / __  /    |   Version: 1.0.0
+/_/      |__/|__/_/ /_/     |   Written By: Benjamin Malczewski & Sam Salehian, Ph.D.
+=#
+
+
+# ITERATION DEFINITION
+nStart = 38500				# first iteration number, refNum = 38500
+nEnd = 248500			# final iteration number, refNum = 248500
+nSkip = 50				# iteration delta
+dt = 5e-4				# time step per iteration, in units from CFD solver
+
+# SCALING PARAMETERS
+lScale = 0.025908					# length scale
+uScale = 347						# velocity scale
+rhoScale = 1.25						# density scale
+pScale = rhoScale*uScale^2			# pressure scale
+
+# FILE READING GENERAL
+surfDir = "../../SAFF/St0.30 SYMM pFluc/FWH/"		# relative directory to where your FWH surfaces are stored
+p3dType = 2											# 1. ASCII, 2. unformatted single-precision (SAFF), 3. unformatted double precision (monopole)
+
+# GRID FILE NAMES
+grid1 = "FWH_top"
+grid2 = "FWH_bot"
+grid3 = "FWH_posZ"
+grid4 = "FWH_negZ"
+grid5 = "FWH_cap1"
+grid6 = "FWH_cap2"
+grid7 = "FWH_cap3"
+grid8 = "FWH_cap4"
+gridExt = "mv.grd"			# extension tacked onto grid file names
+gridNames = (grid1, grid2, grid3, grid4, grid5, grid6, grid7, grid8)	# put grid root names into a tuple
+
+# SOLUTION FILE NAMES
+sol1 = "FWH_top"
+sol2 = "FWH_bot"
+sol3 = "FWH_posZ"
+sol4 = "FWH_negZ"
+sol5 = "FWH_cap1"
+sol6 = "FWH_cap2"
+sol7 = "FWH_cap3"
+sol8 = "FWH_cap4"
+solNames = (sol1, sol2, sol3, sol4, sol5, sol6, sol7, sol8)	# put solution root names into a tuple
+#solNames = (sol1)
+numLength = 0				# defines many digits trailing numbers on the solution files have, zet as 0 if no leading zeros
+solExt = ""					# file extension for solution files, leave as "" if no extension
+
+# OUTPUT NAMES
+summedName = "jetSummed_sol"
+
+#----------------------------------------------------------
+# INDEX SKIPPING & LIMITS IN GRID TO SAVE RAM AND COMP TIME
+
+# SKIPPING
+iSkip = 2
+jSkip = 2
+kSkip = 2
+
+# IJK LIMITS, USE -1 TO GO TO END OF RANGE
+iLim1 = [215, 875]
+iLim2 = [1, -1]
+jLim1 = [1, -1]
+kLim1 = [1, -1]
+
+# PUT ALL LIMITS INTO TUPLES
+iLim = (iLim1,iLim1,iLim1,iLim1,iLim2,iLim2,iLim2,iLim2)
+jLim = (jLim1,jLim1,jLim1,jLim1,jLim1,jLim1,jLim1,jLim1)
+kLim = (kLim1,kLim1,kLim1,kLim1,kLim1,kLim1,kLim1,kLim1)
+
+#----------------------------------------------------------
+
+# MISC GRID PARAMETERS
+gridOffset = (-20.47, -1.2363, -24)		# repositions grid if necessesary, offset applied before dimensionalizing grid, in code does (x,y,z)=(x,y,z)+gridOffset
+interiorPoint = (0.0, 0.0, 0.0)			# point interior to surfaces to flip surface normals
+
+# SURFACE TREATMENT
+#=
+PSI COORESPONDS TO THE WEIGHTING COEFFICIENT DESCRIBED IN MENDEZ ET AL. (2013)
+NOT A CAP	--->	PSI=1
+IS A CAP	--->	PSI=1/numberOfCaps
+=#
+PSI = [1.0, 1.0, 1.0, 1.0, 1/4, 1/4, 1/4, 1/4]		# coefficients for each surface as described in Mendez et al. (2013)
+
+#----------------------------------------------------------
+# FLOW CONSTANTS
+cinf = 347				# farfield speed of sound (in whatever nondimensional units you're working with)
+pinf = 101325			# farfield pressure
+rhoinf = 1.225				# farfield density
+
+#----------------------------------------------------------
+# SIGNAL PROCESSING
+window_type = 1				# 0. No window, 1. Hanning,  2. Hamming (not functional yet)
+overlap_percentage = 75		# 0-100
+nSegments = 5				# number of segments
+
+# CUTOFF FREQUENCY CALCULATION
+cutoffSurfaces = [1,2,3,4]			# surfaces you want to compute cutoff frequency on
+xSearchCutoff = 0.086				# x-coordinate to search for, use dimensional units
+
+#----------------------------------------------------------
+
+#=
+ OBSERVER DEFINITIONS
+-----------------------
+ USERS CAN DO WHAT THEY'D LIKE HERE
+ COMPUTATIONS MUST RESULT IN OBSERVER 
+ X, Y, Z LOCATIONS AS SCATTER VECTORS
+ 1. xOb
+ 2. yOb
+ 3. zOb
+=#
+Deq = 0.02065
+theta = range(0,120*pi/180,100)
+r = 40*Deq
+xOb = r*cos.(theta)
+yOb = r*sin.(theta)
+zOb = zeros(size(theta))
+
+
+# ------------------------------------------
+# DEBUG
+writeUnitNormals = 0				# writes ASCII p3d files of unit normal vectors
+writeSingleSol = 0					# writes solution for all surfaces at first iteration
+write_dA = 0						# writes dA's in p3d format
+writeObserverVectors = 0			# writes observer vectors from single point on a surface
+	observerIndex = 5				# index for writing observer vectors
